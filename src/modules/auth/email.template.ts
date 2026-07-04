@@ -1,0 +1,292 @@
+export const buildOtpHtml = (otp: number) => `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Verification Code</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+        .email-container {
+            max-width: 520px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+        .email-header {
+            background-color: #0f172a; /* Sleek slate dark background for tech portfolio */
+            padding: 32px 24px;
+            text-align: center;
+        }
+        .email-header h1 {
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0;
+            letter-spacing: 0.5px;
+        }
+        .email-header .subtitle {
+            color: #94a3b8;
+            font-size: 13px;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        .email-body {
+            padding: 40px 36px;
+            color: #334155;
+            line-height: 1.6;
+        }
+        .email-body p {
+            margin: 0 0 20px 0;
+            font-size: 15px;
+        }
+        .otp-container {
+            background-color: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 24px;
+            text-align: center;
+            margin: 32px 0;
+        }
+        .otp-code {
+            font-size: 38px;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: 8px;
+            margin: 0;
+            font-family: 'Courier New', Courier, monospace; /* Ensures clear character separation */
+        }
+        .expiry-text {
+            font-size: 12px;
+            color: #64748b;
+            margin: 8px 0 0 0;
+        }
+        .security-notice {
+            font-size: 13px;
+            color: #64748b;
+            background-color: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 24px;
+        }
+        .email-footer {
+            background-color: #f8fafc;
+            padding: 24px 36px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        .email-footer a {
+            color: #0f172a;
+            text-decoration: underline;
+            font-weight: 500;
+        }
+        
+        /* Gmail Dark Mode Adaptations */
+        @media (prefers-color-scheme: dark) {
+            body { background-color: #020617; }
+            .email-container { background-color: #0f172a; border-color: #1e293b; }
+            .email-body { color: #cbd5e1; }
+            .otp-container { background-color: #1e293b; border-color: #334155; }
+            .otp-code { color: #38bdf8; }
+            .expiry-text { color: #94a3b8; }
+            .security-notice { background-color: #1c1917; color: #f43f5e; border-left-color: #f43f5e; }
+            .email-footer { background-color: #0f172a; border-top-color: #1e293b; color: #64748b; }
+            .email-footer a { color: #38bdf8; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="email-container">
+        <!-- Header -->
+        <div class="email-header">
+            <h1>Armen Bichakhchyan</h1>
+            <div class="subtitle">Portfolio Admin Panel</div>
+        </div>
+
+        <!-- Body -->
+        <div class="email-body">
+            <p>Hello Admin,</p>
+            <p>A request has been made to authenticate or perform a sensitive operation on the <strong>Armen Bichakhchyan Portfolio Admin Console</strong>.</p>
+            
+            <!-- Security Warning Box -->
+            <div class="security-notice">
+                <strong>Security Alert:</strong> If you did not initiate this login request, please investigate your server logs immediately.
+            </div>
+
+            <p>Please use the verification code below to authorize this session. This One-Time Password (OTP) is confidential and expires in 10 minutes.</p>
+            
+            <!-- OTP Container -->
+            <div class="otp-container">
+                <p class="otp-code">${otp}</p>
+                <p class="expiry-text">Secure Admin Auth Token</p>
+            </div>
+
+            <p>Regards,<br><strong>Armen Bichakhchyan Backend Service</strong></p>
+        </div>
+
+        <!-- Footer -->
+        <div class="email-footer">
+            <p>This is an automated system security notification generated by your portfolio application.</p>
+            <p>&copy; 2026 Armen Bichakhchyan. All administrative privileges monitored.</p>
+        </div>
+    </div>
+
+</body>
+</html>`
+
+export const buildPasswordResetHtml = (resetCode: number) => {
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Password Reset Code</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+        .email-container {
+            max-width: 520px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+        .email-header {
+            background-color: #0f172a; /* Sleek slate dark background */
+            padding: 32px 24px;
+            text-align: center;
+        }
+        .email-header h1 {
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0;
+            letter-spacing: 0.5px;
+        }
+        .email-header .subtitle {
+            color: #94a3b8;
+            font-size: 13px;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        .email-body {
+            padding: 40px 36px;
+            color: #334155;
+            line-height: 1.6;
+        }
+        .email-body p {
+            margin: 0 0 20px 0;
+            font-size: 15px;
+        }
+        .code-container {
+            text-align: center;
+            margin: 32px 0;
+            padding: 20px;
+            background-color: #f1f5f9;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+        }
+        .reset-code {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 32px;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: 6px;
+            user-select: all; /* Assists in easy highlighting/copying */
+        }
+        .code-instruction {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 8px;
+        }
+        .security-notice {
+            font-size: 13px;
+            color: #64748b;
+            background-color: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 24px;
+        }
+        .email-footer {
+            background-color: #f8fafc;
+            padding: 24px 36px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        
+        /* Gmail Dark Mode Adaptations */
+        @media (prefers-color-scheme: dark) {
+            body { background-color: #020617; }
+            .email-container { background-color: #0f172a; border-color: #1e293b; }
+            .email-body { color: #cbd5e1; }
+            .code-container { background-color: #1e293b; border-color: #334155; }
+            .reset-code { color: #38bdf8; }
+            .code-instruction { color: #94a3b8; }
+            .security-notice { background-color: #1c1917; color: #f43f5e; border-left-color: #f43f5e; }
+            .email-footer { background-color: #0f172a; border-top-color: #1e293b; color: #64748b; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="email-container">
+        <div class="email-header">
+            <h1>Armen Bichakhchyan</h1>
+            <div class="subtitle">Portfolio Admin Panel</div>
+        </div>
+
+        <div class="email-body">
+            <p>Hello Admin,</p>
+            <p>A request has been received to reset the administrative password for the <strong>Armen Bichakhchyan Portfolio Admin Console</strong>.</p>
+            
+            <div class="security-notice">
+                <strong>Security Alert:</strong> If you did not request this password reset, please change your master credentials and review access keys immediately.
+            </div>
+
+            <p>Use the verification code below to complete your reset process. This code remains valid for 15 minutes.</p>
+         
+            <div class="code-container">
+                <div class="reset-code">${resetCode}</div>
+                <div class="code-instruction">Copy and paste this code into the password reset verification window.</div>
+            </div>
+
+            <p style="margin-top: 24px;">Regards,<br><strong>Armen Bichakhchyan Backend Service</strong></p>
+        </div>
+
+        <div class="email-footer">
+            <p>This is an automated system security notification generated by your portfolio application.</p>
+            <p>&copy; 2026 Armen Bichakhchyan. All administrative privileges monitored.</p>
+        </div>
+    </div>
+
+</body>
+</html>\`;
+}`
+}
+
