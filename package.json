@@ -5,12 +5,13 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "seed:admin": "ts-node src/scripts/admin-creator.ts",
     "build": "tsc",
     "start": "node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev"
+    "prisma:migrate": "export NODE_EXTRA_CA_CERTS=./certificates/ca.pem && prisma migrate dev",
+    "prisma:deploy": "export NODE_EXTRA_CA_CERTS=./certificates/ca.pem && prisma migrate deploy",
+    "seed:admin": "ts-node src/scripts/admin-creator.ts"
   },
   "keywords": [],
   "author": "",
