@@ -7,12 +7,26 @@ import { prisma } from './config/prisma';
 import './config/redis'
 import router from "./routes";
 import helmet from "helmet";
-import { corsMiddleware, requestSizeLimiter } from './middlewares/security.middleware';
+import cors from "cors";
+import { requestSizeLimiter } from './middlewares/security.middleware';
 
 const app = express();
 
-app.use(helmet())
-app.use(corsMiddleware);
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
+
+app.use(helmet());
+app.use(cors({
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+}));
 app.use(requestSizeLimiter('10kb')); // Limit request body size
 app.use(cookieParser())
 app.use(express.json({ limit: '10kb' }));
