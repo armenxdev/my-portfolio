@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { redisClient } from '../../config/redis';
 import { AppError } from '../../utils/app-error';
 import {sendOtpEmail, sendResetPasswordEmail} from './email.svc';
-import { AppDataSource } from '../../config/data-source';
+import { prisma } from '../../config/prisma';
 
 export class PasswordResetService {
     private static readonly RESET_CODE_EXPIRY_MINUTES = 15;
@@ -20,10 +20,8 @@ export class PasswordResetService {
     async requestPasswordReset(email: string): Promise<void> {
         const normalizedEmail = email.toLowerCase().trim();
 
-        const adminRepository = AppDataSource.getRepository('Admin');
-        const admin = await adminRepository.findOne({
+        const admin = await prisma.admin.findUnique({
             where: { email: normalizedEmail },
-            select: { id: true, email: true },
         });
 
         // Always return success to prevent email enumeration
@@ -79,8 +77,7 @@ export class PasswordResetService {
         }
 
         // Get admin
-        const adminRepository = AppDataSource.getRepository('Admin');
-        const admin = await adminRepository.findOne({
+        const admin = await prisma.admin.findUnique({
             where: { email: normalizedEmail },
         });
 
@@ -92,8 +89,9 @@ export class PasswordResetService {
         const newHashedPassword = await bcrypt.hash(newPassword, 12);
 
         // Update password
-        await adminRepository.update(admin.id, {
-            password_hash: newHashedPassword,
+        await prisma.admin.update({
+            where: { id: admin.id },
+            data: { password_hash: newHashedPassword }
         });
 
         // Invalidate the reset code

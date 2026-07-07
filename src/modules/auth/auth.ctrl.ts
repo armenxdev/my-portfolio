@@ -1,7 +1,7 @@
 import type {Request, Response} from 'express';
 import bcrypt from 'bcryptjs';
 import {v4 as uuidv4} from 'uuid';
-import {AppDataSource} from '../../config/data-source';
+import {prisma} from '../../config/prisma';
 import {REFRESH_COOKIE_CONFIG} from '../../config/cookie';
 import {asyncHandler} from "../../utils/async-handler";
 import {
@@ -18,7 +18,6 @@ import {DeviceFingerprintService} from "./device-fingerprint.service";
 import {logger} from "../../utils/logger";
 
 
-const adminRepository = AppDataSource.getRepository("Admin");
 const otpService = new OtpService();
 const sessionService = new SessionService();
 const accountLockoutService = new AccountLockoutService();
@@ -28,12 +27,9 @@ const deviceFingerprintService = new DeviceFingerprintService();
 export const login = asyncHandler(async (req: Request, res: Response) => {
     const {email, password} = req.body;
 
-    const admin = await adminRepository
-        .createQueryBuilder("admin")
-        .addSelect("admin.password_hash")
-        .addSelect("admin.twoFactorEnabled")
-        .where("admin.email = :email", {email: email.toLowerCase().trim()})
-        .getOne();
+    const admin = await prisma.admin.findUnique({
+        where: { email: email.toLowerCase().trim() }
+    });
 
     if (!admin) {
         // Still wait to prevent timing attacks
@@ -71,13 +67,13 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const verifyOtp = asyncHandler(async (req: Request, res: Response) => {
-    const {email} = req.body;
-    const  {otp} = req.body;
+    const { email, otp } = req.body;
 
-    const admin = await adminRepository.findOne({
-        where: {email: email.toLowerCase().trim()},
-        select: {id: true, email: true, twoFactorEnabled: true},
+    const admin = await prisma.admin.findUnique({
+        where: { email: email.toLowerCase().trim() }
     });
+
+
 
     if (!admin) {
         throw new AppError('Admin not found', 404);
@@ -130,7 +126,6 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
 
     const newJti = uuidv4();
 
-    // 🌟 Ստանում ենք նաև activeJti-ն service-ից
     const { isValid, isReuseAttack, activeJti } = await sessionService.updateSessionAndDetectReuse(oldJti, newJti);
 
     if (isReuseAttack) {
@@ -142,9 +137,8 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
         throw new AppError('Session expired or invalidated', 401);
     }
 
-    const admin = await adminRepository.findOne({
-        where: { id: adminId },
-        select: { id: true, email: true }
+    const admin = await prisma.admin.findUnique({
+        where: { id: adminId }
     });
 
     if (!admin) {

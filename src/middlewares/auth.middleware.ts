@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import { AppError } from '../utils/app-error';
 import { verifyAccessToken } from '../utils/jwt.helper';
 import { redisClient } from '../config/redis';
-import { AppDataSource } from '../config/data-source';
+import { prisma } from '../config/prisma';
 
 /**
  * Extended Request interface with authenticated user
@@ -78,8 +78,7 @@ export const authenticate = async (
             throw new AppError('Session expired or invalidated. Please login again', 401);
         }
 
-        const adminRepository = AppDataSource.getRepository('Admin');
-        const admin = await adminRepository.findOne({
+        const admin = await prisma.admin.findUnique({
             where: { id: adminId },
             select: { id: true, email: true },
         });
@@ -143,8 +142,7 @@ export const optionalAuthenticate = async (
             return next();
         }
 
-        const adminRepository = AppDataSource.getRepository('Admin');
-        const admin = await adminRepository.findOne({
+        const admin = await prisma.admin.findUnique({
             where: { id: adminId },
             select: { id: true, email: true },
         });

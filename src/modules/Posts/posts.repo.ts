@@ -1,5 +1,5 @@
-import { AppDataSource } from "../../config/data-source";
-import { Post } from "../../entities/Posts";
+import { prisma } from "../../config/prisma";
+import { Post } from "@prisma/client";
 
 export interface PaginationMeta {
     total: number;
@@ -23,39 +23,52 @@ export interface GetPostsFilters {
 }
 
 export class PostsRepo {
-    private repo = AppDataSource.getRepository(Post);
-
-    async create(postData: Partial<Post>): Promise<Post> {
-        const newPost = this.repo.create(postData);
-        return this.repo.save(newPost);
+    async create(postData: any): Promise<Post> {
+        return prisma.post.create({
+            data: {
+                title: postData.title,
+                slug: postData.slug,
+                content: postData.content,
+                tags: postData.tags || [],
+                category: postData.category,
+                adminId: postData.adminId,
+            }
+        });
     }
 
     async getFilteredAndPaginated(filters: GetPostsFilters): Promise<PaginatedPostsResult> {
         const { page, limit, search, tags, category, sort } = filters;
-        const queryBuilder = this.repo.createQueryBuilder('post');
+        const skip = (page - 1) * limit;
+        const orderBy = sort === 'oldest' ? 'asc' : 'desc';
+
+        const where: any = {};
 
         if (search) {
-            queryBuilder.andWhere(
-                'post.title ILIKE :search OR post.content ILIKE :search',
-                { search: `%${search}%` }
-            );
+            where.OR = [
+                { title: { contains: search, mode: 'insensitive' } },
+                { content: { contains: search, mode: 'insensitive' } },
+            ];
         }
 
         if (tags && tags.length > 0) {
-            queryBuilder.andWhere('post.tags && :tags', { tags });
+            where.tags = { hasEvery: tags };
         }
 
         if (category) {
-            queryBuilder.andWhere('post.category = :category', { category });
+            where.category = category;
         }
 
-        const orderDirection = sort === 'oldest' ? 'ASC' : 'DESC';
-        queryBuilder.orderBy('post.created_at', orderDirection);
-
-        const skip = (page - 1) * limit;
-        queryBuilder.skip(skip).take(limit);
-
-        const [posts, totalCount] = await queryBuilder.getManyAndCount();
+        const [posts, totalCount] = await Promise.all([
+            prisma.post.findMany({
+                where,
+                skip,
+                take: limit,
+                orderBy: {
+                    created_at: orderBy,
+                },
+            }),
+            prisma.post.count({ where }),
+        ]);
 
         const totalPages = Math.ceil(totalCount / limit);
 
@@ -71,25 +84,37 @@ export class PostsRepo {
     }
 
     async findBySlug(slug: string): Promise<Post | null> {
-        return this.repo.findOneBy({ slug });
+        return prisma.post.findUnique({
+            where: { slug },
+        });
     }
 
-    async save(post: Post): Promise<Post> {
-        return this.repo.save(post);
+    async save(post: any): Promise<Post> {
+        const { id, ...data } = post;
+        if (id) {
+            return prisma.post.update({
+                where: { id },
+                data,
+            });
+        }
+        return prisma.post.create({ data });
     }
 
     async delete(slug: string): Promise<boolean> {
-        const result = await this.repo.delete({ slug });
-        return (result.affected ?? 0) > 0;
+        const result = await prisma.post.delete({
+            where: { slug },
+        });
+        return !!result;
     }
 
     async getAllTags(): Promise<string[]> {
-        const result = await this.repo
-            .createQueryBuilder("post")
-            .select("DISTINCT unnest(post.tags)", "tag")
-            .orderBy("tag", "ASC")
-            .getRawMany();
-
-        return result.map((row: { tag: string }) => row.tag);
+        const posts = await prisma.post.findMany({
+            select: { tags: true },
+        });
+        const tags = new Set<string>();
+        posts.forEach(post => {
+            post.tags.forEach(tag => tags.add(tag));
+        });
+        return Array.from(tags).sort();
     }
 }

@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Admin {
+  id               Int      @id @default(autoincrement())
+  email            String   @unique @db.VarChar(255)
+  password_hash    String   @db.VarChar(255)
+  twoFactorSecret  String?  @db.VarChar(255)
+  twoFactorEnabled Boolean  @default(false)
+  created_at       DateTime @default(now()) @db.Timestamptz()
+  updated_at       DateTime @updatedAt @db.Timestamptz()
+  posts            Post[]
+
+  @@index([email])
+  @@map("admins")
+}
+
+model ContactMessage {
+  id         Int      @id @default(autoincrement())
+  firstname  String   @db.VarChar(100)
+  lastname   String   @db.VarChar(100)
+  email      String   @db.VarChar(255)
+  message    String   @db.Text
+  created_at DateTime @default(now()) @db.Timestamp()
+
+  @@map("contact_messages")
+}
+
+model Post {
+  id         Int      @id @default(autoincrement())
+  title      String   @db.VarChar(255)
+  slug       String   @unique @db.VarChar(255)
+  content    String   @db.Text
+  tags       String[] @default([])
+  category   String?  @db.VarChar(100)
+  adminId    Int?
+  admin      Admin?   @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  created_at DateTime @default(now()) @db.Timestamp()
+  updated_at DateTime @updatedAt @db.Timestamp()
+
+  @@map("posts")
+}
+
+model Project {
+  id          Int      @id @default(autoincrement())
+  title       String   @db.VarChar(255)
+  description String   @db.Text
+  tech_stack  String[] @default([])
+  github_url  String   @db.VarChar(255)
+  live_url    String?  @db.VarChar(255)
+  isFeatured  Boolean  @default(false)
+  created_at  DateTime @default(now()) @db.Timestamp()
+
+  @@map("projects")
+}

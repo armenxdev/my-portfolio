@@ -1,5 +1,5 @@
 import { PostsRepo, PaginatedPostsResult, GetPostsFilters } from "./posts.repo";
-import { Post } from "../../entities/Posts";
+import { Post } from "@prisma/client";
 import { AppError } from "../../utils/app-error";
 
 export class PostsService {

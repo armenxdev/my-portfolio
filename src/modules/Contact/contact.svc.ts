@@ -1,5 +1,5 @@
 import { ContactRepo, PaginatedMessagesResult, GetMessagesFilters } from "./contact.repo";
-import { ContactMessage } from "../../entities/ContactMessage";
+import { ContactMessage } from "@prisma/client";
 import { AppError } from "../../utils/app-error";
 
 export class ContactService {

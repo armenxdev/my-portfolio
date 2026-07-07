@@ -3,7 +3,7 @@ import { logger } from './utils/logger';
 import cookieParser from 'cookie-parser';
 import { morganMiddleware } from './middlewares/morgan.middleware';
 import { globalErrorHandler } from './middlewares/error.middleware';
-import { AppDataSource } from "./config/data-source";
+import { prisma } from './config/prisma';
 import './config/redis'
 import router from "./routes";
 import helmet from "helmet";
@@ -25,13 +25,13 @@ app.use('/api', router)
 
 app.use(globalErrorHandler);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 async function startServer() {
     try {
 
-        await AppDataSource.initialize();
-        logger.info("📦 Database connection successfully established!");
+        await prisma.$connect();
+        logger.info("📦 Database connection successfully established via Prisma!");
 
         logger.info("⚡ Redis connection successfully established!");
 

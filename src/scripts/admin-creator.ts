@@ -1,7 +1,6 @@
 import bcrypt from 'bcryptjs';
-import { AppDataSource } from '../config/data-source';
-import { Admin } from '../entities/Admin';
-import { registerSchema } from '../schemas/auth.schema'; // Այստեղ ներմուծեք Ձեր սխեմայի ֆայլի ճիշտ ուղին
+import { prisma } from '../config/prisma';
+import { registerSchema } from '../schemas/auth.schema'; 
 import 'dotenv/config';
 
 async function createInitialAdmin() {
@@ -32,12 +31,9 @@ async function createInitialAdmin() {
     const validatedPassword = value.password;
 
     try {
-        console.log('Connecting to database via TypeORM...');
-        await AppDataSource.initialize();
+        console.log('Connecting to database via Prisma...');
 
-        const adminRepository = AppDataSource.getRepository(Admin);
-
-        const existingAdmin = await adminRepository.findOne({
+        const existingAdmin = await prisma.admin.findUnique({
             where: { email: validatedEmail }
         });
 
@@ -51,12 +47,12 @@ async function createInitialAdmin() {
 
         console.log("💾 Saving admin to database...");
 
-        const newAdmin = adminRepository.create({
-            email: validatedEmail,
-            password_hash: hashedPassword
+        await prisma.admin.create({
+            data: {
+                email: validatedEmail,
+                password_hash: hashedPassword
+            }
         });
-
-        await adminRepository.save(newAdmin);
 
         console.log('🎉 SUCCESS: Super Admin created successfully!');
         console.log(`📧 Email: ${validatedEmail}`);
@@ -64,7 +60,7 @@ async function createInitialAdmin() {
     } catch (error) {
         console.error('❌ Error creating admin:', error);
     } finally {
-        await AppDataSource.destroy();
+        await prisma.$disconnect();
         process.exit(0);
     }
 }

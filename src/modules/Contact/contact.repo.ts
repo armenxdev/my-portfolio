@@ -1,5 +1,5 @@
-import { AppDataSource } from "../../config/data-source";
-import { ContactMessage } from "../../entities/ContactMessage";
+import { prisma } from "../../config/prisma";
+import { ContactMessage } from "@prisma/client";
 
 export interface ContactPaginationMeta {
     total: number;
@@ -20,24 +20,33 @@ export interface GetMessagesFilters {
 }
 
 export class ContactRepo {
-    private repo = AppDataSource.getRepository(ContactMessage);
-
-    async create(data: Partial<ContactMessage>): Promise<ContactMessage> {
-        const newMessage = this.repo.create(data);
-        return this.repo.save(newMessage);
+    async create(data: any): Promise<ContactMessage> {
+        return prisma.contactMessage.create({
+            data: {
+                firstname: data.firstname,
+                lastname: data.lastname,
+                email: data.email,
+                message: data.message,
+            }
+        });
     }
 
     async getPaginated(filters: GetMessagesFilters): Promise<PaginatedMessagesResult> {
         const { page, limit, sort } = filters;
-        const queryBuilder = this.repo.createQueryBuilder('msg');
-
-        const orderDirection = sort === 'oldest' ? 'ASC' : 'DESC';
-        queryBuilder.orderBy('msg.created_at', orderDirection);
-
         const skip = (page - 1) * limit;
-        queryBuilder.skip(skip).take(limit);
+        const orderBy = sort === 'oldest' ? 'asc' : 'desc';
 
-        const [messages, totalCount] = await queryBuilder.getManyAndCount();
+        const [messages, totalCount] = await Promise.all([
+            prisma.contactMessage.findMany({
+                skip,
+                take: limit,
+                orderBy: {
+                    created_at: orderBy,
+                },
+            }),
+            prisma.contactMessage.count(),
+        ]);
+
         const totalPages = Math.ceil(totalCount / limit);
 
         return {
@@ -52,11 +61,15 @@ export class ContactRepo {
     }
 
     async findById(id: number): Promise<ContactMessage | null> {
-        return this.repo.findOneBy({ id });
+        return prisma.contactMessage.findUnique({
+            where: { id },
+        });
     }
 
     async delete(id: number): Promise<boolean> {
-        const result = await this.repo.delete({ id });
-        return (result.affected ?? 0) > 0;
+        const result = await prisma.contactMessage.delete({
+            where: { id },
+        });
+        return !!result;
     }
 }
